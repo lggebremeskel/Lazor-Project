@@ -20,3 +20,4 @@ def fileReader(filename):
         if parsing == True:
             if not lines.startswith('GRID'):
                 grid.append(lines)
+        # TODO : the grid
