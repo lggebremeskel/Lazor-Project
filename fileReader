@@ -1,0 +1,22 @@
+def fileReader(filename):
+    points = []
+    parsing = False
+    grid = []
+    file = open(filename, 'r')
+    for lines in file:
+        if lines[0] == 'A':
+            res = [int(i) for i in lines.split() if i.isdigit()]
+            reflect = res
+        if lines[0] == 'P':
+            res = [int(i) for i in lines.split() if i.isdigit()]
+            points.append(res)
+        if lines[0] == 'C':
+            res = [int(i) for i in lines.split() if i.isdigit()]
+            refract = res
+        if lines.startswith('GRID START'):
+            parsing = True
+        if lines.startswith('GRID STOP'):
+            parsing = False
+        if parsing == True:
+            if not lines.startswith('GRID'):
+                grid.append(lines)
