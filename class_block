@@ -1,0 +1,15 @@
+class Block:
+    def __init__(self, blockType):
+        self.blockType = blockType
+
+    def __call__(self, blockType):
+        return print(self.blockGrid(self.blockType))
+
+    def blockGrid(self, blockType):
+        x = []
+        gridB = []
+        for i in range(3):
+            x.append(blockType)
+        for i in range(3):
+            gridB.append(x)
+        return gridB
