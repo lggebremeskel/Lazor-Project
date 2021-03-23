@@ -13,3 +13,17 @@ class Block:
         for i in range(3):
             gridB.append(x)
         return gridB
+        
+
+def createGrid(grid):
+    rows = []
+    board = []
+    for x in range(len(grid[0])):
+        rows.append(0)
+    for y in range(len(grid)):
+        board.append(rows)
+    for a in range(len(grid)):
+        for b in range(len(grid[0])):
+            board[a][b] = Block(grid[a][b])
+    return board
+
