@@ -96,7 +96,7 @@ def pathLazor(board, grid, points, lazor):
     while VALIDLAZOR:
         if onBoard(newLazor[0], newLazor[1], board):
             for b in len(newLazor):
-                if board[newLazor[1]][newLazor[0]] == 0:
+                if board[newLazor[1]][newLazor[0]] == 0 or board[newLazor[1]][newLazor[0]] == 'T':
                     board[newLazor[1]][newLazor[0]] = 'l'
                 for c in range(directions):
                     if type(board[newLazor[b][1] + directions[c][0]
