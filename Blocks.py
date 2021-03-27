@@ -20,8 +20,9 @@ class Block():
 
 
 	'''
-    def __init__(self, type):
+    def __init__(self, type, fixed=True):
         self.type = type
+
 
     def type(self):
         if self.type == 'A':
