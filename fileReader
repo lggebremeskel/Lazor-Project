@@ -2,22 +2,39 @@ def fileReader(filename):
     points = []
     parsing = False
     grid = []
+    listed = []
+    reflect = None
+    refract = None
+    opaque = None
+    lazors = []
     file = open(filename, 'r')
     for lines in file:
         if lines[0] == 'A':
-            res = [int(i) for i in lines.split() if i.isdigit()]
-            reflect = res
+            # moveable, used to solve
+            reflect = [int(i) for i in lines.split() if i.isdigit()]
+        if lines[0] == 'B':
+            # moveable, used to solve
+            opaque = [int(i) for i in lines.split() if i.isdigit()]
         if lines[0] == 'P':
-            res = [int(i) for i in lines.split() if i.isdigit()]
-            points.append(res)
+            # for the intersection points
+            values = [int(i) for i in lines.split() if i.isdigit()]
+            points.append(values)
+        if lines[0] == 'L':
+            # for the lazor sources
+            values = [int(i) for i in re.findall(r'-?\d+', lines)]
+            lazors.append(values)
         if lines[0] == 'C':
-            res = [int(i) for i in lines.split() if i.isdigit()]
-            refract = res
+            # moveable, used to solve
+            refract = [int(i) for i in lines.split() if i.isdigit()]
         if lines.startswith('GRID START'):
             parsing = True
         if lines.startswith('GRID STOP'):
             parsing = False
-        if parsing == True:
+        if parsing is True:
             if not lines.startswith('GRID'):
-                grid.append(lines)
-        # TODO : the grid
+                A = lines.replace(" ", "")
+                B = A.replace("\n", "")
+                listed = []
+                for i in range(len(B)):
+                    listed.append(B[i])
+                grid.append(listed)
