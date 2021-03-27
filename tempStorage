@@ -1,0 +1,134 @@
+
+'''
+Plan:
+    let's first read in the file and store the lazors, etc that shit
+        - grid of m*3, n*3 for the board
+        - Block object with a subclass
+        - let's code the lazor
+'''
+import re
+
+
+class Block:
+
+    def __init__(self, blockType, status):
+        self.blockType = blockType
+        self.status = status
+
+    def __call__(self, blockType, status):
+        return self.blockType
+
+
+def playLazor(filename):
+    points = []
+    parsing = False
+    grid = []
+    listed = []
+    reflect = None
+    refract = None
+    opaque = None
+    lazors = []
+    file = open(filename, 'r')
+    for lines in file:
+        if lines[0] == 'A':
+            reflect = [int(i) for i in lines.split() if i.isdigit()]
+        if lines[0] == 'B':
+            opaque = [int(i) for i in lines.split() if i.isdigit()]
+        if lines[0] == 'P':
+            # for the intersection points
+            values = [int(i) for i in lines.split() if i.isdigit()]
+            points.append(values)
+        if lines[0] == 'L':
+            # for the lazor sources
+            values = [int(i) for i in re.findall(r'-?\d+', lines)]
+            lazors.append(values)
+        if lines[0] == 'C':
+            refract = [int(i) for i in lines.split() if i.isdigit()]
+        if lines.startswith('GRID START'):
+            parsing = True
+        if lines.startswith('GRID STOP'):
+            parsing = False
+        if parsing is True:
+            if not lines.startswith('GRID'):
+                A = lines.replace(" ", "")
+                B = A.replace("\n", "")
+                listed = []
+                for i in range(len(B)):
+                    listed.append(B[i])
+                grid.append(listed)
+    board = createGrid(grid, points, lazors)
+    pathLazor(board, grid, points, lazors[0])
+    file.close()
+
+
+def createGrid(grid, points, lazors):
+    board = [
+        [0 for i in range(len(grid[0])*2 + 1)]
+        for j in range(len(grid)*2 + 1)]
+
+    for a in range(len(grid)):
+        for b in range(len(grid[0])):
+            if grid[a][b] != 'o':
+                board[a+1][b+1] = Block(grid[a][b], 'fixed')
+    for a in range(len(points)):
+        board[points[a][0]][points[a][1]] = 'Lazor'
+    for b in range(len(lazors)):
+        board[lazors[b][0]][lazors[b][1]] = 'Target'
+    return board
+
+
+def onBoard(x, y, board):
+    return x >= 0 and x < len(board) and y >= 0 and y < len(board[0])
+
+
+def pathLazor(board, grid, points, lazor):
+    newLazor = [lazor[0]+lazor[2], lazor[1] + lazor[3]]
+    VALIDLAZOR = True
+    VALIDOPAQUE = False
+    directions = [
+        (0, 1),
+        (0, -1),
+        (-1, 0),
+        (1, 0)
+    ]
+    # plan:
+    # lazor,
+    while VALIDLAZOR:
+        if onBoard(newLazor[0], newLazor[1], board):
+            for b in len(newLazor):
+                if board[newLazor[1]][newLazor[0]] == 0:
+                    board[newLazor[1]][newLazor[0]] = 'l'
+                for c in range(directions):
+                    if type(board[newLazor[b][1] + directions[c][0]
+                                  ][newLazor[0] + directions[c][1]]) == 'Block':
+                        if board[newLazor[b][1] + directions[c][0]
+                                 ][newLazor[b][0] + directions[c][1]
+                                   ].blockType == 'A':
+                            newLazor[b][2] *= -1
+                            newLazor[b][3] *= -1
+                            newLazor[b] = [newLazor[b][0] + newLazor[b][2], newLazor[b]
+                                           [1] + newLazor[b][3], newLazor[b][2], newLazor[b][b][3]]
+                        if board[newLazor[b][0] + directions[c][0]
+                                 ][newLazor[b][1] + directions[c][1]
+                                   ].blockType == 'B':
+                            newLazor[b][2] = 0
+                            newLazor[b][3] = 0
+                            newLazor[b] = [newLazor[b][0] + newLazor[b][2], newLazor[b]
+                                           [1] + newLazor[b][3], newLazor[b][2], newLazor[b][b][3]]
+                        if board[newLazor[b][0] + directions[c][0]
+                                 ][newLazor[b][1] + directions[c][1]
+                                   ].blockType == 'C':
+                            newLazor[b] = [newLazor[b][0] + newLazor[b][2], newLazor[b]
+                                           [1] + newLazor[b][3], newLazor[b][2], newLazor[b][b][3]]
+                            reflectLazor = [
+                                newLazor[b][0], newLazor[b][1], -1*newLazor[b][2], -1*newLazor[b][3]]
+                            newLazor.append(reflectLazor)
+                            VALIDOPAQUE = True
+
+        else:
+            VALIDLAZOR = False
+
+
+if __name__ == '__main__':
+    playLazor('dark_1.bff')
+
