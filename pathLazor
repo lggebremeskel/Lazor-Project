@@ -1,0 +1,41 @@
+def onBoard(x, y, board):
+    return x >= 0 and x < len(board) and y >= 0 and y < len(board[0])
+
+
+def pathLazor(board, grid, points, lazor, numlazors):
+    if numlazors < 1:
+        newLazor = [lazor]
+    else:
+        newLazor = lazor
+    VALIDLAZOR = True
+    VALIDOPAQUE = False
+    directions = [
+        (0, 1),
+        (0, -1),
+        (-1, 0),
+        (1, 0)
+    ]
+    
+    while len(newLazor) > 0:
+            cell = [newLazor[0][0], newLazor[0][1]]
+            if onBoard(cell[1], cell[0], board):
+                if board[cell[1]][cell[0]] == 0:
+                    board[cell[1]][cell[0]] = 1
+                for a in range(len(directions)):
+                    neighbors = [cell[1]+directions[a][0], cell[0]+directions[a][1]]
+                    if onBoard(neighbors[0],neighbors[1],board) and isinstance(board[neighbors[0]][neighbors[1]], Block):
+                        if board[neighbors[0]][neighbors[1]].blockType == 'A':
+                            newLazor[0][2] *= -1
+                            newLazor[0][3] *= -1
+                        elif board[neighbors[0]][neighbors[1]].blockType == 'B':
+                            newLazor[0][2] = len(board)
+                            newLazor[0][3] = len(board)
+                        elif board[neighbors[0]][neighbors[1]].blockType == 'C':
+                            newLazor.append(newLazor[0])
+                            newLazor[0][2] *= -1 
+                            newLazor[0][3] *= -1
+                newLazor[0] = [cell[0] + newLazor[0][2], cell[1] + newLazor[0][3],newLazor[0][2], newLazor[0][3]]
+            else:
+                newLazor.remove(newLazor[0])
+    return board
+# where the board is populated with '1' for lazors
