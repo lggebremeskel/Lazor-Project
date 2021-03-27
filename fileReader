@@ -24,6 +24,7 @@ def fileReader(filename):
             # for the lazor sources
             values = [int(i) for i in re.findall(r'-?\d+', lines)]
             lazors.append(values)
+            numlazors +=1
             # [x1, y1 vx1, vy1].....
         if lines[0] == 'C':
             # moveable, used to solve
