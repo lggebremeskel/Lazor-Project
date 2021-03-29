@@ -1,0 +1,17 @@
+def solver(board, lazors, points, reflect, opaque, refract):
+
+    def blockPlacement(board):
+        pass
+
+    def validMove(board):
+        validMoves = []
+        for a in range(len(board)):
+            for b in range(len(board[0])):
+                if board[a][b] == 2:
+                    validMoves.append((a, b))
+        return validMoves
+
+    validMoves = validMove(board)
+    totalMovableBlocks = reflect[0] + refract[0] + opaque[0]
+    combinations = iter.combinations(validMoves, totalMovableBlocks)
+    print(list(combinations))
