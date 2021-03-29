@@ -12,11 +12,10 @@ import itertools as iter
 
 class Block:
 
-    def __init__(self, blockType, fixed):
+    def __init__(self, blockType):
         self.blockType = blockType
-        self.fixed = fixed
 
-    def __call__(self, blockType, status):
+    def __call__(self, blockType):
         return self.blockType
 
 
@@ -30,6 +29,7 @@ def playLazor(filename):
     refract = [0]
     opaque = [0]
     lazors = []
+    OGLazors = []
     file = open(filename, 'r')
     for lines in file:
         if lines[0] == 'A':
@@ -45,7 +45,8 @@ def playLazor(filename):
         if lines[0] == 'L':
             # for the lazor sources
             values = [int(i) for i in re.findall(r'-?\d+', lines)]
-            lazors.append(values)
+            lazors.append(tuple(values))
+            OGLazors.append(values)
             numlazors += 1
         if lines[0] == 'C':
             # moveable, used to solve
@@ -63,12 +64,13 @@ def playLazor(filename):
                     listed.append(B[i])
                 grid.append(listed)
    # originalBoard = createGrid(grid, points, lazors)
-    board = createGrid(grid, points, lazors)
+    board = createGrid(grid, points)
     file.close()
-    solver(board, grid, lazors, numlazors, points, reflect, opaque, refract)
+    solver(board, grid, lazors, numlazors, points,
+           reflect, opaque, refract, OGLazors)
 
 
-def createGrid(grid, points, lazors):
+def createGrid(grid, points):
     board = [
         [0 for i in range(len(grid[0])*2 + 1)]
         for j in range(len(grid)*2 + 1)]
@@ -76,7 +78,7 @@ def createGrid(grid, points, lazors):
     for a in range(len(grid)):
         for b in range(len(grid[0])):
             if grid[a][b] != 'o':
-                board[2*a+1][2*b+1] = Block(grid[a][b], True)
+                board[2*a+1][2*b+1] = Block(grid[a][b])
             else:
                 board[2*a+1][2*b+1] = 2
     # for a in range(len(points)):
@@ -91,9 +93,9 @@ def onBoard(x, y, board):
 
 
 def pathLazor(board, grid, lazor, numlazors):
-    newLazor = [0 for i in range(len([lazor]))]
-    for n in range(len([lazor])):
-        newLazor[n] = lazor[n]
+    newLazor = [0 for i in range(numlazors)]
+    for n in range(numlazors):
+        newLazor[n] = list(lazor[n])
 
     VALIDLAZOR = True
     VALIDOPAQUE = False
@@ -106,44 +108,48 @@ def pathLazor(board, grid, lazor, numlazors):
 
     while len(newLazor) > 0:
         cell = newLazor[0]
+        cellx = cell[0]
+        celly = cell[1]
         removed = False
-        if onBoard(cell[0], cell[1], board):
-            if board[cell[1]][cell[0]] == 0:
-                board[cell[1]][cell[0]] = 1
+        if onBoard(cellx, celly, board):
+            if board[celly][cellx] == 0:
+                board[celly][cellx] = 1
             for a in range(len(directions)):
-                neighborx = cell[1]+directions[a][0]
-                neighbory = cell[0]+directions[a][1]
+                neighborx = cellx + directions[a][0]
+                neighbory = celly + directions[a][1]
                 if onBoard(neighborx, neighbory, board) and isinstance(board[neighbory][neighborx], Block):
                     if board[neighbory][neighborx].blockType == 'A':
-                        if neighborx == cell[0] + cell[2]:
+                        if neighborx == cellx + cell[2]:
                             newLazor[0][2] *= -1
-                            newLazor[0][3] *= -1
-                        elif neighbory == cell[1] + cell[3]:
+                        elif neighbory == celly + cell[3]:
                             newLazor[0][3] *= -1
                     elif board[neighbory][neighborx].blockType == 'B':
-                        if neighborx == cell[0] + cell[2] or neighbory == cell[1] + cell[3]:
+                        if neighborx == cellx + cell[2] or neighbory == celly + cell[3]:
                             newLazor.remove(newLazor[0])
                             removed = True
                     elif board[neighbory][neighborx].blockType == 'C':
-                        newLazor.append(newLazor[0])
-                        if neighborx == cell[0] + cell[2]:
+                        if neighborx == cellx + cell[2]:
+                            newLazor.append([cellx + newLazor[0][2], celly +
+                                             newLazor[0][3], newLazor[0][2], newLazor[0][3]])
                             newLazor[0][2] *= -1
-                            newLazor[0][3] *= -1
-                        elif neighbory == cell[1] + cell[3]:
+                        elif neighbory == celly + cell[3]:
+                            newLazor.append([cellx + newLazor[0][2], celly +
+                                             newLazor[0][3], newLazor[0][2], newLazor[0][3]])
                             newLazor[0][3] *= -1
             if not removed:
-                newLazor[0] = [cell[0] + newLazor[0][2], cell[1] +
+                newLazor[0] = [cellx + newLazor[0][2], celly +
                                newLazor[0][3], newLazor[0][2], newLazor[0][3]]
         else:
             newLazor.remove(newLazor[0])
+
     return board
 # where the board is populated with '1' for lazors
 
 
-def solver(board, grid, lazors, numlazors, points, reflect, opaque, refract):
+def solver(board, grid, lazors, numlazors, points, reflect, opaque, refract, OGLazors):
 
     def blockPlacement(board, reflect, opaque, refract, combinations):
-        while len(combinations) != 0:
+        while len(combinations) > 0:
             noReflect = True
             noRefract = True
             noOpaque = True
@@ -154,18 +160,18 @@ def solver(board, grid, lazors, numlazors, points, reflect, opaque, refract):
             if refract != 0:
                 noRefract = False
             if not noReflect:
-                board[combinations[0][0]][combinations[0][1]
-                                          ] = Block('A', 'moveable')
+                board[combinations[0][1]][combinations[0][0]
+                                          ] = Block('A')
                 reflect -= 1
                 combinations.remove(combinations[0])
             if not noOpaque:
-                board[combinations[0][0]][combinations[0][1]
-                                          ] = Block('B', 'moveable')
+                board[combinations[0][1]][combinations[0][0]
+                                          ] = Block('B')
                 opaque -= 1
                 combinations.remove(combinations[0])
             if not noRefract:
-                board[combinations[0][0]][combinations[0][1]
-                                          ] = Block('C', 'moveable')
+                board[combinations[0][1]][combinations[0][0]
+                                          ] = Block('C')
                 refract -= 1
                 combinations.remove(combinations[0])
 
@@ -176,7 +182,7 @@ def solver(board, grid, lazors, numlazors, points, reflect, opaque, refract):
         for y in range(len(board)):
             for x in range(len(board[0])):
                 if board[y][x] == 2:
-                    validMoves.append((y, x))
+                    validMoves.append((x, y))
         return validMoves
 
     def checkLazors(board, points):
@@ -192,21 +198,25 @@ def solver(board, grid, lazors, numlazors, points, reflect, opaque, refract):
     validMoves = validMove(board)
     WIN = False
     totalMovableBlocks = reflect[0] + refract[0] + opaque[0]
-    combinations = list(iter.combinations(validMoves, totalMovableBlocks))
-    while len(combinations) > 0:
+    permutations = list(iter.permutations(validMoves, totalMovableBlocks))
+    # board index is board[y][x]
+    while len(permutations) > 0:
+        if permutations[0] == ((1, 5), (5, 1), (7, 3)):
+            WIN = True
         newBoard = blockPlacement(
-            board, reflect[0], opaque[0], refract[0], list(combinations[0]))
-        lazorBoard = pathLazor(newBoard, grid, lazors, numlazors)
+            board, reflect[0], opaque[0], refract[0], list(permutations[0]))
+        lazorBoard = pathLazor(board, grid, lazors, numlazors)
         WIN = checkLazors(lazorBoard, points)
-        if WIN:
+        if WIN is True:
             print('WINNNNNNN')
             break
-        combinations.remove(combinations[0])
-        board = createGrid(grid, points, lazors)
-
+        permutations.remove(permutations[0])
+        board = createGrid(grid, points)
+    if WIN is True:
+        print("WHY ARE YOU LIKE THIS")
     if WIN is False:
         print('You suck')
 
 
 if __name__ == '__main__':
-    playLazor('dark_1.bff')
+    playLazor('mad_1.bff')
