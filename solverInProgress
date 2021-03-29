@@ -1,5 +1,7 @@
 def solver(board, lazors, points, reflect, opaque, refract):
-
+    
+    import itertools as iter
+    
     def blockPlacement(board):
         pass
 
