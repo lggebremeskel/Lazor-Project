@@ -1,9 +1,33 @@
-def solver(board, lazors, points, reflect, opaque, refract):
-    
-    import itertools as iter
-    
-    def blockPlacement(board):
-        pass
+def solver(board, grid, lazors, numlazors, points, reflect, opaque, refract):
+
+    def blockPlacement(board, reflect, opaque, refract, combinations):
+        while len(combinations) != 0:
+            noReflect = True
+            noRefract = True
+            noOpaque = True
+            if reflect != 0:
+                noReflect = False
+            if opaque != 0:
+                noOpaque = False
+            if refract != 0:
+                noRefract = False
+            if not noReflect:
+                board[combinations[0][1]][combinations[0][0]
+                                          ] = Block('A', 'moveable')
+                reflect -= 1
+                combinations.remove(combinations[0])
+            if not noOpaque:
+                board[combinations[0][1]][combinations[0][0]
+                                          ] = Block('B', 'moveable')
+                opaque -= 1
+                combinations.remove(combinations[0])
+            if not noRefract:
+                board[combinations[0][1]][combinations[0][0]
+                                          ] = Block('C', 'moveable')
+                refract -= 1
+                combinations.remove(combinations[0])
+
+        return board
 
     def validMove(board):
         validMoves = []
@@ -13,7 +37,29 @@ def solver(board, lazors, points, reflect, opaque, refract):
                     validMoves.append((a, b))
         return validMoves
 
+    def checkLazors(board, points):
+        numValidTarget = 0
+        for a in range(len(points)):
+            if board[points[a][1]][points[a][0]] == 1:
+                numValidTarget += 1
+        if len(points) == numValidTarget:
+            return True
+        else:
+            return False
+
     validMoves = validMove(board)
+    WIN = False
     totalMovableBlocks = reflect[0] + refract[0] + opaque[0]
-    combinations = iter.combinations(validMoves, totalMovableBlocks)
-    print(list(combinations))
+    combinations = list(iter.combinations(validMoves, totalMovableBlocks))
+    while len(combinations) > 0:
+        newBoard = blockPlacement(
+            board, reflect[0], opaque[0], refract[0], combinations=[(3, 3), (1, 5), (3, 5)])  # list(combinations[0]))
+        lazorBoard = pathLazor(newBoard, grid, lazors, numlazors)
+        WIN = checkLazors(lazorBoard, points)
+        if WIN:
+            print('WINNNNNNN')
+            break
+        combinations.remove(combinations[0])
+        board = createGrid(grid, points, lazors)
+    if WIN is False:
+        print('You suck')
