@@ -1,12 +1,14 @@
-def fileReader(filename):
+def playLazor(filename):
     points = []
     parsing = False
+    numlazors = 0
     grid = []
     listed = []
-    reflect = None
-    refract = None
-    opaque = None
+    reflect = [0]
+    refract = [0]
+    opaque = [0]
     lazors = []
+    OGLazors = []
     file = open(filename, 'r')
     for lines in file:
         if lines[0] == 'A':
@@ -19,13 +21,12 @@ def fileReader(filename):
             # for the intersection points
             values = [int(i) for i in lines.split() if i.isdigit()]
             points.append(values)
-            # [ tx, ty]....
         if lines[0] == 'L':
             # for the lazor sources
             values = [int(i) for i in re.findall(r'-?\d+', lines)]
-            lazors.append(values)
-            numlazors +=1
-            # [x1, y1 vx1, vy1].....
+            lazors.append(tuple(values))
+            OGLazors.append(values)
+            numlazors += 1
         if lines[0] == 'C':
             # moveable, used to solve
             refract = [int(i) for i in lines.split() if i.isdigit()]
@@ -41,6 +42,3 @@ def fileReader(filename):
                 for i in range(len(B)):
                     listed.append(B[i])
                 grid.append(listed)
-                # reprints what's between the START and STOP on the file wihtout spaces
-                # grid = ['o','o','o'], [....]
-                # for the dimensions we could do row = len(grid) and col = len(grid[0])
