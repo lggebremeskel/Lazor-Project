@@ -1,12 +1,8 @@
-def onBoard(x, y, board):
-    return x >= 0 and x < len(board) and y >= 0 and y < len(board[0])
+def pathLazor(board, grid, lazor, numlazors):
+    newLazor = [0 for i in range(numlazors)]
+    for n in range(numlazors):
+        newLazor[n] = list(lazor[n])
 
-
-def pathLazor(board, grid, points, lazor, numlazors):
-    if numlazors < 1:
-        newLazor = [lazor]
-    else:
-        newLazor = lazor
     VALIDLAZOR = True
     VALIDOPAQUE = False
     directions = [
@@ -15,27 +11,42 @@ def pathLazor(board, grid, points, lazor, numlazors):
         (-1, 0),
         (1, 0)
     ]
-    
+
     while len(newLazor) > 0:
-            cell = [newLazor[0][0], newLazor[0][1]]
-            if onBoard(cell[1], cell[0], board):
-                if board[cell[1]][cell[0]] == 0:
-                    board[cell[1]][cell[0]] = 1
-                for a in range(len(directions)):
-                    neighbors = [cell[1]+directions[a][0], cell[0]+directions[a][1]]
-                    if onBoard(neighbors[0],neighbors[1],board) and isinstance(board[neighbors[0]][neighbors[1]], Block):
-                        if board[neighbors[0]][neighbors[1]].blockType == 'A':
+        cell = newLazor[0]
+        cellx = cell[0]
+        celly = cell[1]
+        removed = False
+        if onBoard(cellx, celly, board):
+            if board[celly][cellx] == 0:
+                board[celly][cellx] = 1
+            for a in range(len(directions)):
+                neighborx = cellx + directions[a][0]
+                neighbory = celly + directions[a][1]
+                if onBoard(neighborx, neighbory, board) and isinstance(board[neighbory][neighborx], Block):
+                    if board[neighbory][neighborx].blockType == 'Reflective':
+                        if neighborx == cellx + cell[2]:
                             newLazor[0][2] *= -1
+                        elif neighbory == celly + cell[3]:
                             newLazor[0][3] *= -1
-                        elif board[neighbors[0]][neighbors[1]].blockType == 'B':
-                            newLazor[0][2] = len(board)
-                            newLazor[0][3] = len(board)
-                        elif board[neighbors[0]][neighbors[1]].blockType == 'C':
-                            newLazor.append(newLazor[0])
-                            newLazor[0][2] *= -1 
+                    elif board[neighbory][neighborx].blockType == 'Opaque':
+                        if neighborx == cellx + cell[2] or neighbory == celly + cell[3]:
+                            newLazor.remove(newLazor[0])
+                            removed = True
+                    elif board[neighbory][neighborx].blockType == 'Refractive':
+                        if neighborx == cellx + cell[2]:
+                            newLazor.append([cellx + newLazor[0][2], celly +
+                                             newLazor[0][3], newLazor[0][2], newLazor[0][3]])
+                            newLazor[0][2] *= -1
+                        elif neighbory == celly + cell[3]:
+                            newLazor.append([cellx + newLazor[0][2], celly +
+                                             newLazor[0][3], newLazor[0][2], newLazor[0][3]])
                             newLazor[0][3] *= -1
-                newLazor[0] = [cell[0] + newLazor[0][2], cell[1] + newLazor[0][3],newLazor[0][2], newLazor[0][3]]
-            else:
-                newLazor.remove(newLazor[0])
+            if not removed:
+                newLazor[0] = [cellx + newLazor[0][2], celly +
+                               newLazor[0][3], newLazor[0][2], newLazor[0][3]]
+        else:
+            newLazor.remove(newLazor[0])
+
     return board
 # where the board is populated with '1' for lazors
