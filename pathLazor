@@ -24,16 +24,16 @@ def pathLazor(board, grid, lazor, numlazors):
                 neighborx = cellx + directions[a][0]
                 neighbory = celly + directions[a][1]
                 if onBoard(neighborx, neighbory, board) and isinstance(board[neighbory][neighborx], Block):
-                    if board[neighbory][neighborx].blockType == 'Reflective':
+                    if board[neighbory][neighborx].type == 'Reflective':
                         if neighborx == cellx + cell[2]:
                             newLazor[0][2] *= -1
                         elif neighbory == celly + cell[3]:
                             newLazor[0][3] *= -1
-                    elif board[neighbory][neighborx].blockType == 'Opaque':
+                    elif board[neighbory][neighborx].type == 'Opaque':
                         if neighborx == cellx + cell[2] or neighbory == celly + cell[3]:
                             newLazor.remove(newLazor[0])
                             removed = True
-                    elif board[neighbory][neighborx].blockType == 'Refractive':
+                    elif board[neighbory][neighborx].type == 'Refractive':
                         if neighborx == cellx + cell[2]:
                             newLazor.append([cellx + newLazor[0][2], celly +
                                              newLazor[0][3], newLazor[0][2], newLazor[0][3]])
