@@ -1,0 +1,67 @@
+def solver(board, grid, lazors, numlazors, points, reflect, opaque, refract, OGLazors):
+
+    def blockPlacement(board, reflect, opaque, refract, combinations):
+        while len(combinations) > 0:
+            noReflect = True
+            noRefract = True
+            noOpaque = True
+            if reflect != 0:
+                noReflect = False
+            if opaque != 0:
+                noOpaque = False
+            if refract != 0:
+                noRefract = False
+            if not noReflect:
+                board[combinations[0][1]][combinations[0][0]
+                                          ] = Block('A')
+                reflect -= 1
+                combinations.remove(combinations[0])
+            if not noOpaque:
+                board[combinations[0][1]][combinations[0][0]
+                                          ] = Block('B')
+                opaque -= 1
+                combinations.remove(combinations[0])
+            if not noRefract:
+                board[combinations[0][1]][combinations[0][0]
+                                          ] = Block('C')
+                refract -= 1
+                combinations.remove(combinations[0])
+
+        return board
+  def validMove(board):
+        validMoves = []
+        for y in range(len(board)):
+            for x in range(len(board[0])):
+                if board[y][x] == 2:
+                    validMoves.append((x, y))
+        return validMoves
+
+    def checkLazors(board, points):
+        numValidTarget = 0
+        for a in range(len(points)):
+            if board[points[a][1]][points[a][0]] == 1:
+                numValidTarget += 1
+        if len(points) == numValidTarget:
+            return True
+        else:
+            return False
+
+    validMoves = validMove(board)
+    WIN = False
+    totalMovableBlocks = reflect[0] + refract[0] + opaque[0]
+    permutations = list(iter.permutations(validMoves, totalMovableBlocks))
+    # board index is board[y][x]
+    while len(permutations) > 0:
+        newBoard = blockPlacement(
+            board, reflect[0], opaque[0], refract[0], list(permutations[0]))
+        lazorBoard = pathLazor(board, grid, lazors, numlazors)
+        WIN = checkLazors(lazorBoard, points)
+        if WIN is True:
+            print('WIN')
+            break
+        permutations.remove(permutations[0])
+        board = createGrid(grid, points)
+    if WIN is True:
+        print("WHY ARE YOU LIKE THIS")
+    if WIN is False:
+        print('Nope, you lost')
