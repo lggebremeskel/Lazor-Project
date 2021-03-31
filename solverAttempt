@@ -1,10 +1,13 @@
 def solver(board, grid, lazors, numlazors, points, reflect, opaque, refract, OGLazors):
 
     def blockPlacement(board, reflect, opaque, refract, combinations):
+    
         while len(combinations) > 0:
+        # reset booleans
             noReflect = True
             noRefract = True
             noOpaque = True
+            # set booleans if there are block present
             if reflect != 0:
                 noReflect = False
             if opaque != 0:
@@ -12,6 +15,7 @@ def solver(board, grid, lazors, numlazors, points, reflect, opaque, refract, OGL
             if refract != 0:
                 noRefract = False
             if not noReflect:
+            # if there are block present, put them in their spots
                 board[combinations[0][1]][combinations[0][0]
                                           ] = Block('A')
                 reflect -= 1
@@ -29,6 +33,7 @@ def solver(board, grid, lazors, numlazors, points, reflect, opaque, refract, OGL
 
         return board
   def validMove(board):
+  # tests for valid spaces on the board (where board[y][x] == 2)
         validMoves = []
         for y in range(len(board)):
             for x in range(len(board[0])):
@@ -37,6 +42,7 @@ def solver(board, grid, lazors, numlazors, points, reflect, opaque, refract, OGL
         return validMoves
 
     def checkLazors(board, points):
+    # checks if there are lazors at every target intersection
         numValidTarget = 0
         for a in range(len(points)):
             if board[points[a][1]][points[a][0]] == 1:
