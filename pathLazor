@@ -1,47 +1,103 @@
 def onBoard(x, y, board):
+    """
+    Check for coordinates on board.
+
+    Parameters
+    ----------
+    x : int
+        x coordinate.
+    y : int
+        y coordinate.
+    board : list of lists
+        full lazor board in format board[y][x]
+
+    Returns
+    -------
+    bool
+        True if [x,y] coordinates are on board.
+
+    """
     return x >= 0 and x < len(board[0]) and y >= 0 and y < len(board)
 
 
 def pathLazor(board, lazor, numlazors):
+    """
+    Map path of lazor(s) onto board.
+
+    Parameters
+    ----------
+    board : list of lists
+        full lazor board, including placed blocks in format board[y][x]
+    lazor : list of lists
+        lazor points in format [x,y,vx,vy].
+    numlazors : int
+        number of lazors present on the board.
+
+    Returns
+    -------
+    board : list of lists
+        full lazor board, with 1 to mark placed lazors.
+
+    """
     newLazor = [0 for i in range(numlazors)]
     for n in range(numlazors):
         newLazor[n] = list(lazor[n])
-    directions = [-1, 1]
-    removed = False
     while len(newLazor) > 0:
         # newLazor = [x,y,vx,vy]
         removed = False
+        refracted = False
         cell = [newLazor[0][0], newLazor[0][1], newLazor[0][2], newLazor[0][3]]
         if onBoard(cell[0], cell[1], board):
             board[cell[1]][cell[0]] = 1
             if onBoard(cell[0]+cell[2], cell[1]+cell[3], board):
-                for d in directions:
-                    if onBoard(cell[0]+d, cell[1], board) and isinstance(board[cell[1]][cell[0]+d], Block):
-                        if board[cell[1]][cell[0]+d].type == 'Reflect' and not removed:
-                            newLazor[0][2] *= -1
-                        elif board[cell[1]][cell[0]+d].type == 'Refract' and not removed:
-                            newLazor.append(
-                                [cell[0], cell[1], cell[2], cell[3]])
-                            newLazor[0][2] *= -1
-                        elif board[cell[1]][cell[0]+d].type == 'Opaque' and not removed:
-                            newLazor.remove(newLazor[0])
-                            removed = True
-                    elif onBoard(cell[0], cell[1]+d, board) and isinstance(board[cell[1]+d][cell[0]], Block):
-                        if board[cell[1]+d][cell[0]].type == 'Reflect' and not removed:
-                            newLazor[0][3] *= -1
-                        elif board[cell[1]+d][cell[0]].type == 'Refract' and not removed:
-                            newLazor.append(
-                                [cell[0], cell[1], cell[2], cell[3]])
-                            newLazor[0][3] *= -1
-                        elif board[cell[1]+d][cell[0]].type == 'Opaque' and not removed:
-                            newLazor.remove(newLazor[0])
-                            removed = True
+                # onBoard format [x,y,board]
+                if onBoard(cell[0]+cell[2], cell[1], board) and isinstance(board[cell[1]][cell[0]+cell[2]], Block):
+                    # board[y][x]
+                    if board[cell[1]][cell[0]+cell[2]].type == 'Reflect' and not removed:
+                        # board[y][x]
+                        newLazor[0][2] *= -1
+                        # newLazor = [x,y,vx,vy]
+                    elif board[cell[1]][cell[0]+cell[2]].type == 'Refract' and not removed and not board[cell[1]][cell[0]+cell[2]].passed:
+                        # board[y][x]
+                        newLazor.append(
+                            [cell[0], cell[1], cell[2], cell[3]])
+                        refracted = True
+                        board[cell[1]][cell[0]+cell[2]].setPassed(True)
+                        newLazor[0][2] *= -1
+                        # newLazor = [x,y,vx,vy]
+                    elif board[cell[1]][cell[0]+cell[2]].type == 'Opaque' and not removed:
+                        # board[y][x]
+                        newLazor.remove(newLazor[0])
+                        removed = True
+                elif onBoard(cell[0], cell[1]+cell[3], board) and isinstance(board[cell[1]+cell[3]][cell[0]], Block):
+                    if board[cell[1]+cell[3]][cell[0]].type == 'Reflect' and not removed:
+                        # board[y][x]
+                        newLazor[0][3] *= -1
+                        # newLazor = [x,y,vx,vy]
+                    elif board[cell[1]+cell[3]][cell[0]].type == 'Refract' and not removed and not board[cell[1]+cell[3]][cell[0]].passed:
+                        # board[y][x]
+                        newLazor.append(
+                            [cell[0], cell[1], cell[2], cell[3]])
+                        refracted = True
+                        board[cell[1]+cell[3]][cell[0]].setPassed(True)
+                        newLazor[0][3] *= -1
+                        # newLazor = [x,y,vx,vy]
+                    elif board[cell[1]+cell[3]][cell[0]].type == 'Opaque' and not removed:
+                        # board[y][x]
+                        newLazor.remove(newLazor[0])
+                        removed = True
                 if not removed:
                     newLazor[0] = [cell[0] + newLazor[0][2], cell[1] +
                                    newLazor[0][3], newLazor[0][2], newLazor[0][3]]
+                    # newLazor = [x,y,vx,vy]
+                if refracted:
+                    newLazor[-1] = [cell[0] + cell[2], cell[1] +
+                                    cell[3], cell[2], cell[3]]
+                    # newLazor = [x,y,vx,vy]
             else:
                 newLazor.remove(newLazor[0])
         else:
             newLazor.remove(newLazor[0])
+
     return board
 # where the board is populated with '1' for lazors
