@@ -1,0 +1,140 @@
+def blockPlacement(board, blockPerm, combo, lazors, numlazors, points):
+    """
+    Place blocks on board and test their efficacy.
+
+    Parameters
+    ----------
+    board : list of lists
+        full lazor board in format board[y][x]
+    blockPerm : list of lists
+        list of lists of characters representing all possible block combinations.
+    combo : list of tuples
+        one possible coordinate combination in format [(x,y)]
+    lazors : list of lists
+        lazor points in format [x,y,vx,vy].
+    numlazors : int
+        number of lazors present on the board.
+    points : list of lists
+        list of lists of target point coordinates in format (x,y).
+
+    Returns
+    -------
+    list
+        Returns: WIN boolean to return true if board is solved.
+                lazorBoard as a list of lists with placed blocks and lazors in
+                    format lazorboard[y][x]
+
+    """
+    WIN = False
+    index = 0
+    while len(blockPerm) > index:
+        for i in range(len(blockPerm[0])):
+            board[combo[i][1]][combo[i][0]] = Block(blockPerm[index][i])
+        lazorBoard = pathLazor(board, lazors, numlazors)
+        WIN = checkLazors(lazorBoard, points)
+        if not WIN:
+            index += 1
+        else:
+            break
+    return [WIN, lazorBoard]
+
+
+def validMove(board):
+    """
+    Check for valid coordinates on board where board[y][x] == 2.
+
+    Parameters
+    ----------
+    board : list of lists
+        full lazor board in format board[y][x].
+
+    Returns
+    -------
+    validMoves : list of tuples
+        list of valid coordinates that are avaliable for block placement in format (x,y).
+
+    """
+    validMoves = []
+    for y in range(len(board)):
+        for x in range(len(board[0])):
+            if board[y][x] == 2:
+                validMoves.append((x, y))
+    return validMoves
+
+
+def checkLazors(board, points):
+    """
+    Check if all targets have been crossed by a lazor.
+
+    Parameters
+    ----------
+    board : list of lists
+        full lazor board in format board[y][x].
+    points : list of lists
+        list of lists of target point coordinates in format (x,y).
+
+    Returns
+    -------
+    bool
+        True if all target values are valid (equal to 1).
+
+    """
+    numValidTarget = 0
+    for a in range(len(points)):
+        if board[points[a][1]][points[a][0]] == 1:
+            numValidTarget += 1
+    if len(points) == numValidTarget:
+        return True
+    else:
+        return False
+
+
+def solver(board, lazors, numlazors, points, blocks):
+    """
+    Solve the board.
+
+    Parameters
+    ----------
+    board : list of lists
+        full lazor board in format board[y][x]
+    lazors : list of lists
+        lazor points in format [x,y,vx,vy].
+    numlazors : int
+        number of lazors present on the board.
+    points : list of lists
+        list of lists of target point coordinates in format (x,y).
+    blocks : list of ints
+        list of number of free block types in format [reflect, opaque, refract].
+
+    Returns
+    -------
+    winningBoard : list of lists
+        Winning solution to the input board, with placed blocks and lazors.
+
+    """
+    validMoves = validMove(board)
+    totalMovableBlocks = blocks[0]+blocks[1] + blocks[2]
+    coordCombo = list(iter.combinations(validMoves, totalMovableBlocks))
+    blockList = []
+    if blocks[0] > 0:
+        for i in range(blocks[0]):
+            blockList.append('A')
+    if blocks[1] > 0:
+        for i in range(blocks[1]):
+            blockList.append('B')
+    if blocks[2] > 0:
+        for i in range(blocks[2]):
+            blockList.append('C')
+    blockPerm = list(iter.permutations(blockList))
+    # board index is board[y][x]
+    blockPerm = list(dict.fromkeys(blockPerm))
+    winningBoard = []
+    for coord in coordCombo:
+        [WIN, outputBoard] = blockPlacement(board, blockPerm, list(
+            coord), lazors, numlazors, points)
+        if WIN is True:
+            print('WINNNNNNN')
+            winningBoard = outputBoard
+            break
+        board = createGrid(grid, points)
+    return winningBoard
