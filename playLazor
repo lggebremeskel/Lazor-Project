@@ -41,4 +41,4 @@ def playLazor(filename):
                 for i in range(len(B)):
                     listed.append(B[i])
                 grid.append(listed)
-    return [grid, reflect, refract, opaque, numlazors, lazors, points] 
+    return [grid, reflect, refract, opaque, numlazors, lazors, points, filename] 
