@@ -22,7 +22,7 @@ def pathLazor(board, lazor, numlazors):
                         elif board[cell[1]][cell[0]+d].blockType == 'C' and not removed:
                             newLazor.append(
                                 [cell[0], cell[1], cell[2], cell[3]])
-                            newLazor[0][2] *= 1
+                            newLazor[0][2] *= -1
                         elif board[cell[1]][cell[0]+d].blockType == 'B' and not removed:
                             newLazor.remove(newLazor[0])
                             removed = True
@@ -32,7 +32,7 @@ def pathLazor(board, lazor, numlazors):
                         elif board[cell[1]+d][cell[0]].blockType == 'C' and not removed:
                             newLazor.append(
                                 [cell[0], cell[1], cell[2], cell[3]])
-                            newLazor[0][3] *= 1
+                            newLazor[0][3] *= -1
                         elif board[cell[1]+d][cell[0]].blockType == 'B' and not removed:
                             newLazor.remove(newLazor[0])
                             removed = True
