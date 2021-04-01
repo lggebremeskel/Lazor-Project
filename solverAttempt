@@ -34,7 +34,7 @@ def checkLazors(board, points):
 
 
 def solver(board, grid, lazors, numlazors, points, blocks):
-
+    import itertools as iter
     validMoves = validMove(board)
     totalMovableBlocks = blocks[0]+blocks[1] + blocks[2]
     coordCombo = list(iter.combinations(validMoves, totalMovableBlocks))
