@@ -89,7 +89,7 @@ def checkLazors(board, points):
         return False
 
 
-def solver(board, lazors, numlazors, points, blocks):
+def solver(board, grid, lazors, numlazors, points, blocks):
     """
     Solve the board.
 
