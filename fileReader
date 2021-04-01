@@ -1,4 +1,5 @@
 def playLazor(filename):
+    import re
     points = []
     parsing = False
     numlazors = 0
@@ -8,7 +9,6 @@ def playLazor(filename):
     refract = [0]
     opaque = [0]
     lazors = []
-    OGLazors = []
     file = open(filename, 'r')
     for lines in file:
         if lines[0] == 'A':
@@ -25,7 +25,6 @@ def playLazor(filename):
             # for the lazor sources
             values = [int(i) for i in re.findall(r'-?\d+', lines)]
             lazors.append(tuple(values))
-            OGLazors.append(values)
             numlazors += 1
         if lines[0] == 'C':
             # moveable, used to solve
@@ -42,3 +41,4 @@ def playLazor(filename):
                 for i in range(len(B)):
                     listed.append(B[i])
                 grid.append(listed)
+    return [grid, reflect, refract, opaque, numlazors, lazors, points] 
