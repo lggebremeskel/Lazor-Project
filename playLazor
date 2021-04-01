@@ -1,4 +1,22 @@
 def playLazor(filename):
+    """
+    Read in file and compiles all relevant data for solver.
+
+    Parameters
+    ----------
+    filename : str
+        name of board file to be solved. should be a *.bff file.
+
+    Returns
+    -------
+    list
+        Returns: grid from the file as a list of characters in format board[y][x]
+                 lazors as a list of lists in format [x,y,vx,vy]
+                 target points as a list of lists in format [x,y]
+                 blocks as a list in format [reflect, opaque, refract] 
+                 numlazors as an integer value
+
+    """
     import re
     points = []
     parsing = False
@@ -41,7 +59,8 @@ def playLazor(filename):
         elif lines[0] == 'C':
             # moveable, used to solve
             refract = [int(i) for i in lines.split() if i.isdigit()]
+
+   # originalBoard = createGrid(grid, points, lazors)
     blocks = (reflect[0], opaque[0], refract[0])
     file.close()
-  
-    return [grid, lazors, points, blocks]
+    return [grid, lazors, points, blocks, numlazors]
