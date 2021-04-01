@@ -17,23 +17,23 @@ def pathLazor(board, lazor, numlazors):
             if onBoard(cell[0]+cell[2], cell[1]+cell[3], board):
                 for d in directions:
                     if onBoard(cell[0]+d, cell[1], board) and isinstance(board[cell[1]][cell[0]+d], Block):
-                        if board[cell[1]][cell[0]+d].blockType == 'A' and not removed:
+                        if board[cell[1]][cell[0]+d].type == 'Reflect' and not removed:
                             newLazor[0][2] *= -1
-                        elif board[cell[1]][cell[0]+d].blockType == 'C' and not removed:
+                        elif board[cell[1]][cell[0]+d].type == 'Refract' and not removed:
                             newLazor.append(
                                 [cell[0], cell[1], cell[2], cell[3]])
                             newLazor[0][2] *= -1
-                        elif board[cell[1]][cell[0]+d].blockType == 'B' and not removed:
+                        elif board[cell[1]][cell[0]+d].type == 'Opaque' and not removed:
                             newLazor.remove(newLazor[0])
                             removed = True
                     elif onBoard(cell[0], cell[1]+d, board) and isinstance(board[cell[1]+d][cell[0]], Block):
-                        if board[cell[1]+d][cell[0]].blockType == 'A' and not removed:
+                        if board[cell[1]+d][cell[0]].type == 'Reflect' and not removed:
                             newLazor[0][3] *= -1
-                        elif board[cell[1]+d][cell[0]].blockType == 'C' and not removed:
+                        elif board[cell[1]+d][cell[0]].type == 'Refract' and not removed:
                             newLazor.append(
                                 [cell[0], cell[1], cell[2], cell[3]])
                             newLazor[0][3] *= -1
-                        elif board[cell[1]+d][cell[0]].blockType == 'B' and not removed:
+                        elif board[cell[1]+d][cell[0]].type == 'Opaque' and not removed:
                             newLazor.remove(newLazor[0])
                             removed = True
                 if not removed:
