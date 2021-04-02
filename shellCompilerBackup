@@ -15,6 +15,17 @@ class Block:
         self.type = blockType
         self.setPassed(passed)
         self.color()
+        
+   def type(self):
+        if self.type == 'A':
+            self.type = 'Reflect'
+            return self.type
+        if self.type == 'B':
+            self.type = 'Opaque'
+            return self.type
+        if self.type == 'C':
+            self.type = 'Refract'
+            return self.type
 
     def __call__(self, blockType, colorType):
         """Call function for Block class."""
@@ -27,7 +38,7 @@ class Block:
     def color(self):
         """Assign colors to block types."""
         if self.type == 'A':
-            self.color = (179, 0, 255)
+            self.color = (255, 255, 255)
         elif self.type == 'B':
             self.color = (153, 153, 153)
         elif self.type == 'C':
@@ -189,11 +200,11 @@ def pathLazor(board, lazor, numlazors):
                 # onBoard format [x,y,board]
                 if onBoard(cell[0]+cell[2], cell[1], board) and isinstance(board[cell[1]][cell[0]+cell[2]], Block):
                     # board[y][x]
-                    if board[cell[1]][cell[0]+cell[2]].type == 'A' and not removed:
+                    if board[cell[1]][cell[0]+cell[2]].type == 'Reflect' and not removed:
                         # board[y][x]
                         newLazor[0][2] *= -1
                         # newLazor = [x,y,vx,vy]
-                    elif board[cell[1]][cell[0]+cell[2]].type == 'C' and not removed and not board[cell[1]][cell[0]+cell[2]].passed:
+                    elif board[cell[1]][cell[0]+cell[2]].type == 'Refract' and not removed and not board[cell[1]][cell[0]+cell[2]].passed:
                         # board[y][x]
                         newLazor.append(
                             [cell[0], cell[1], cell[2], cell[3]])
@@ -201,16 +212,16 @@ def pathLazor(board, lazor, numlazors):
                         board[cell[1]][cell[0]+cell[2]].setPassed(True)
                         newLazor[0][2] *= -1
                         # newLazor = [x,y,vx,vy]
-                    elif board[cell[1]][cell[0]+cell[2]].type == 'B' and not removed:
+                    elif board[cell[1]][cell[0]+cell[2]].type == 'Opaque' and not removed:
                         # board[y][x]
                         newLazor.remove(newLazor[0])
                         removed = True
                 elif onBoard(cell[0], cell[1]+cell[3], board) and isinstance(board[cell[1]+cell[3]][cell[0]], Block):
-                    if board[cell[1]+cell[3]][cell[0]].type == 'A' and not removed:
+                    if board[cell[1]+cell[3]][cell[0]].type == 'Reflect' and not removed:
                         # board[y][x]
                         newLazor[0][3] *= -1
                         # newLazor = [x,y,vx,vy]
-                    elif board[cell[1]+cell[3]][cell[0]].type == 'C' and not removed and not board[cell[1]+cell[3]][cell[0]].passed:
+                    elif board[cell[1]+cell[3]][cell[0]].type == 'Refract' and not removed and not board[cell[1]+cell[3]][cell[0]].passed:
                         # board[y][x]
                         newLazor.append(
                             [cell[0], cell[1], cell[2], cell[3]])
@@ -218,7 +229,7 @@ def pathLazor(board, lazor, numlazors):
                         board[cell[1]+cell[3]][cell[0]].setPassed(True)
                         newLazor[0][3] *= -1
                         # newLazor = [x,y,vx,vy]
-                    elif board[cell[1]+cell[3]][cell[0]].type == 'B' and not removed:
+                    elif board[cell[1]+cell[3]][cell[0]].type == 'Opaque' and not removed:
                         # board[y][x]
                         newLazor.remove(newLazor[0])
                         removed = True
@@ -407,8 +418,9 @@ def saveImage(board, points, lazors, filename, scale=1000):
 
     """
     from PIL import Image
-    fileName = "" + filename + "_completed.png"
-    image_map = Image.new('RGB', (len(board[0]), len(board)+2))
+    newFileName = filename.replace('.bff', '')
+    fileName = "" + newFileName + "_completed.png"
+    image_map = Image.new('RGB', (len(board[0]), len(board)))
     pixel = image_map.load()
     for x in range(len(board[0])):
         for y in range(len(board)):
@@ -426,7 +438,6 @@ def saveImage(board, points, lazors, filename, scale=1000):
         (image_map.size[0]*scale, image_map.size[1]*scale), resample=Image.NEAREST)
     finalImage.save(fileName)
     print('Your progress has been saved.')
-
 
 if __name__ == '__main__':
     filename = 'mad_7.bff'
