@@ -1,0 +1,435 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Apr  1 12:42:04 2021
+
+@author: proce
+"""
+
+import itertools as iter
+
+
+class Block:
+    """Block class that creates a block from given type."""
+
+    def __init__(self, blockType, passed=False, color=(205, 102, 29)):
+        self.type = blockType
+        self.setPassed(passed)
+        self.color()
+
+    def __call__(self, blockType, colorType):
+        """Call function for Block class."""
+        return self.type
+
+    def setPassed(self, passed):
+        """Set 'passed' field to boolean value."""
+        self.passed = passed
+
+    def color(self):
+        """Assign colors to block types."""
+        if self.type == 'A':
+            self.color = (179, 0, 255)
+        elif self.type == 'B':
+            self.color = (153, 153, 153)
+        elif self.type == 'C':
+            self.color = (255, 255, 153)
+        else:
+            self.color = (205, 102, 29)
+
+
+def playLazor(filename):
+    """
+    Read in file and compiles all relevant data for solver.
+
+    Parameters
+    ----------
+    filename : str
+        name of board file to be solved. should be a *.bff file.
+
+    Returns
+    -------
+    list
+        Returns: grid from the file as a list of characters in format board[y][x]
+                 lazors as a list of lists in format [x,y,vx,vy]
+                 target points as a list of lists in format [x,y]
+                 blocks as a list in format [reflect, opaque, refract] 
+                 numlazors as an integer value
+
+    """
+    import re
+    points = []
+    parsing = False
+    numlazors = 0
+    grid = []
+    listed = []
+    reflect = [0]
+    refract = [0]
+    opaque = [0]
+    lazors = []
+    file = open(filename, 'r')
+    for lines in file:
+        if lines.startswith('GRID START'):
+            parsing = True
+        if lines.startswith('GRID STOP'):
+            parsing = False
+        if parsing is True:
+            if not lines.startswith('GRID'):
+                F = lines.replace(" ", "")
+                E = F.replace("\n", "")
+                listed = []
+                for i in range(len(E)):
+                    listed.append(E[i])
+                grid.append(listed)
+        elif lines[0] == 'A':
+            # moveable, used to solve
+            reflect = [int(i) for i in lines.split() if i.isdigit()]
+        elif lines[0] == 'B':
+            # moveable, used to solve
+            opaque = [int(i) for i in lines.split() if i.isdigit()]
+        elif lines[0] == 'P':
+            # for the intersection points
+            values = [int(i) for i in lines.split() if i.isdigit()]
+            points.append(values)
+        elif lines[0] == 'L':
+            # for the lazor sources
+            values = [int(i) for i in re.findall(r'-?\d+', lines)]
+            lazors.append(tuple(values))
+            numlazors += 1
+        elif lines[0] == 'C':
+            # moveable, used to solve
+            refract = [int(i) for i in lines.split() if i.isdigit()]
+
+   # originalBoard = createGrid(grid, points, lazors)
+    blocks = (reflect[0], opaque[0], refract[0])
+    file.close()
+    return [grid, lazors, points, blocks, numlazors]
+
+
+def createGrid(grid, points):
+    """
+    Create fully lazor board from file grid.
+
+    Parameters
+    ----------
+    grid : list of lists
+        list of lists of characters, taken from file.
+    points : list of lists
+        list of lists of target point coordinates in format (x,y).
+
+    Returns
+    -------
+    board : list of lists
+        Returns board that maps grid using numbers 0,2 in format board[y][x]
+
+    """
+    board = [
+        [0 for i in range(len(grid[0])*2 + 1)]
+        for j in range(len(grid)*2 + 1)]
+
+    for a in range(len(grid)):
+        for b in range(len(grid[0])):
+            if grid[a][b] != 'o':
+                board[2*a+1][2*b+1] = Block(grid[a][b])
+            else:
+                board[2*a+1][2*b+1] = 2
+    return board
+
+
+def onBoard(x, y, board):
+    """
+    Check for coordinates on board.
+
+    Parameters
+    ----------
+    x : int
+        x coordinate.
+    y : int
+        y coordinate.
+    board : list of lists
+        full lazor board in format board[y][x]
+
+    Returns
+    -------
+    bool
+        True if [x,y] coordinates are on board.
+
+    """
+    return x >= 0 and x < len(board[0]) and y >= 0 and y < len(board)
+
+
+def pathLazor(board, lazor, numlazors):
+    """
+    Map path of lazor(s) onto board.
+
+    Parameters
+    ----------
+    board : list of lists
+        full lazor board, including placed blocks in format board[y][x]
+    lazor : list of lists
+        lazor points in format [x,y,vx,vy].
+    numlazors : int
+        number of lazors present on the board.
+
+    Returns
+    -------
+    board : list of lists
+        full lazor board, with 1 to mark placed lazors.
+
+    """
+    newLazor = [0 for i in range(numlazors)]
+    for n in range(numlazors):
+        newLazor[n] = list(lazor[n])
+    while len(newLazor) > 0:
+        # newLazor = [x,y,vx,vy]
+        removed = False
+        refracted = False
+        cell = [newLazor[0][0], newLazor[0][1], newLazor[0][2], newLazor[0][3]]
+        if onBoard(cell[0], cell[1], board):
+            board[cell[1]][cell[0]] = 1
+            if onBoard(cell[0]+cell[2], cell[1]+cell[3], board):
+                # onBoard format [x,y,board]
+                if onBoard(cell[0]+cell[2], cell[1], board) and isinstance(board[cell[1]][cell[0]+cell[2]], Block):
+                    # board[y][x]
+                    if board[cell[1]][cell[0]+cell[2]].type == 'A' and not removed:
+                        # board[y][x]
+                        newLazor[0][2] *= -1
+                        # newLazor = [x,y,vx,vy]
+                    elif board[cell[1]][cell[0]+cell[2]].type == 'C' and not removed and not board[cell[1]][cell[0]+cell[2]].passed:
+                        # board[y][x]
+                        newLazor.append(
+                            [cell[0], cell[1], cell[2], cell[3]])
+                        refracted = True
+                        board[cell[1]][cell[0]+cell[2]].setPassed(True)
+                        newLazor[0][2] *= -1
+                        # newLazor = [x,y,vx,vy]
+                    elif board[cell[1]][cell[0]+cell[2]].type == 'B' and not removed:
+                        # board[y][x]
+                        newLazor.remove(newLazor[0])
+                        removed = True
+                elif onBoard(cell[0], cell[1]+cell[3], board) and isinstance(board[cell[1]+cell[3]][cell[0]], Block):
+                    if board[cell[1]+cell[3]][cell[0]].type == 'A' and not removed:
+                        # board[y][x]
+                        newLazor[0][3] *= -1
+                        # newLazor = [x,y,vx,vy]
+                    elif board[cell[1]+cell[3]][cell[0]].type == 'C' and not removed and not board[cell[1]+cell[3]][cell[0]].passed:
+                        # board[y][x]
+                        newLazor.append(
+                            [cell[0], cell[1], cell[2], cell[3]])
+                        refracted = True
+                        board[cell[1]+cell[3]][cell[0]].setPassed(True)
+                        newLazor[0][3] *= -1
+                        # newLazor = [x,y,vx,vy]
+                    elif board[cell[1]+cell[3]][cell[0]].type == 'B' and not removed:
+                        # board[y][x]
+                        newLazor.remove(newLazor[0])
+                        removed = True
+                if not removed:
+                    newLazor[0] = [cell[0] + newLazor[0][2], cell[1] +
+                                   newLazor[0][3], newLazor[0][2], newLazor[0][3]]
+                    # newLazor = [x,y,vx,vy]
+                if refracted:
+                    newLazor[-1] = [cell[0] + cell[2], cell[1] +
+                                    cell[3], cell[2], cell[3]]
+                    # newLazor = [x,y,vx,vy]
+            else:
+                newLazor.remove(newLazor[0])
+        else:
+            newLazor.remove(newLazor[0])
+
+    return board
+# where the board is populated with '1' for lazors
+
+
+def blockPlacement(board, blockPerm, combo, lazors, numlazors, points):
+    """
+    Place blocks on board and test their efficacy.
+
+    Parameters
+    ----------
+    board : list of lists
+        full lazor board in format board[y][x]
+    blockPerm : list of lists
+        list of lists of characters representing all possible block combinations.
+    combo : list of tuples
+        one possible coordinate combination in format [(x,y)]
+    lazors : list of lists
+        lazor points in format [x,y,vx,vy].
+    numlazors : int
+        number of lazors present on the board.
+    points : list of lists
+        list of lists of target point coordinates in format (x,y).
+
+    Returns
+    -------
+    list
+        Returns: WIN boolean to return true if board is solved.
+                lazorBoard as a list of lists with placed blocks and lazors in
+                    format lazorboard[y][x]
+
+    """
+    WIN = False
+    index = 0
+    while len(blockPerm) > index:
+        for i in range(len(blockPerm[0])):
+            board[combo[i][1]][combo[i][0]] = Block(blockPerm[index][i])
+        lazorBoard = pathLazor(board, lazors, numlazors)
+        WIN = checkLazors(lazorBoard, points)
+        if not WIN:
+            index += 1
+        else:
+            break
+    return [WIN, lazorBoard]
+
+
+def validMove(board):
+    """
+    Check for valid coordinates on board where board[y][x] == 2.
+
+    Parameters
+    ----------
+    board : list of lists
+        full lazor board in format board[y][x].
+
+    Returns
+    -------
+    validMoves : list of tuples
+        list of valid coordinates that are avaliable for block placement in format (x,y).
+
+    """
+    validMoves = []
+    for y in range(len(board)):
+        for x in range(len(board[0])):
+            if board[y][x] == 2:
+                validMoves.append((x, y))
+    return validMoves
+
+
+def checkLazors(board, points):
+    """
+    Check if all targets have been crossed by a lazor.
+
+    Parameters
+    ----------
+    board : list of lists
+        full lazor board in format board[y][x].
+    points : list of lists
+        list of lists of target point coordinates in format (x,y).
+
+    Returns
+    -------
+    bool
+        True if all target values are valid (equal to 1).
+
+    """
+    numValidTarget = 0
+    for a in range(len(points)):
+        if board[points[a][1]][points[a][0]] == 1:
+            numValidTarget += 1
+    if len(points) == numValidTarget:
+        return True
+    else:
+        return False
+
+
+def solver(board, grid, lazors, numlazors, points, blocks):
+    """
+    Solve the board.
+
+    Parameters
+    ----------
+    board : list of lists
+        full lazor board in format board[y][x]
+    grid : list of lists
+        list of lists of characters, taken from file.
+    lazors : list of lists
+        lazor points in format [x,y,vx,vy].
+    numlazors : int
+        number of lazors present on the board.
+    points : list of lists
+        list of lists of target point coordinates in format (x,y).
+    blocks : list of ints
+        list of number of free block types in format [reflect, opaque, refract].
+
+    Returns
+    -------
+    winningBoard : list of lists
+        Winning solution to the input board, with placed blocks and lazors.
+
+    """
+    validMoves = validMove(board)
+    totalMovableBlocks = blocks[0]+blocks[1] + blocks[2]
+    coordCombo = list(iter.combinations(validMoves, totalMovableBlocks))
+    blockList = []
+    if blocks[0] > 0:
+        for i in range(blocks[0]):
+            blockList.append('A')
+    if blocks[1] > 0:
+        for i in range(blocks[1]):
+            blockList.append('B')
+    if blocks[2] > 0:
+        for i in range(blocks[2]):
+            blockList.append('C')
+    blockPerm = list(iter.permutations(blockList))
+    # board index is board[y][x]
+    blockPerm = list(dict.fromkeys(blockPerm))
+    winningBoard = []
+    for coord in coordCombo:
+        [WIN, outputBoard] = blockPlacement(board, blockPerm, list(
+            coord), lazors, numlazors, points)
+        if WIN is True:
+            print('Congratualtions! You have passed this level.')
+            winningBoard = outputBoard
+            break
+        board = createGrid(grid, points)
+    return winningBoard
+
+
+def saveImage(board, points, lazors, filename, scale=1000):
+    """
+    Create basic image of the board and save.
+
+    Parameters
+    ----------
+    board : list of lists
+        full lazor board in format board[y][x].
+    points : list of lists
+        list of lists of target point coordinates in format (x,y).
+    lazors : list of lists
+        lazor points in format [x,y,vx,vy].
+    filename : str
+        name of board file to be solved. should be a *.bff file.
+    scale : int, optional
+        Scale-up value of the generated image. The default is 1000.
+
+    Returns
+    -------
+    None.
+
+    """
+    from PIL import Image
+    fileName = "" + filename + "_completed.png"
+    image_map = Image.new('RGB', (len(board[0]), len(board)+2))
+    pixel = image_map.load()
+    for x in range(len(board[0])):
+        for y in range(len(board)):
+            if isinstance(board[y][x], Block):
+                pixel[x, y] = board[y][x].color
+            elif board[y][x] == 1:
+                pixel[x, y] = (255, 0, 0)
+            else:
+                pixel[x, y] = (0, 0, 0)
+    for i in lazors:
+        pixel[i[0], i[1]] = (139, 35, 35)
+    for i in points:
+        pixel[i[0], i[1]] = (0, 139, 0)
+    finalImage = image_map.resize(
+        (image_map.size[0]*scale, image_map.size[1]*scale), resample=Image.NEAREST)
+    finalImage.save(fileName)
+    print('Your progress has been saved.')
+
+
+if __name__ == '__main__':
+    filename = 'mad_7.bff'
+    [grid, lazors, points, blocks, numlazors] = playLazor(filename)
+    board = createGrid(grid, points)
+    winningBoard = solver(board, grid, lazors, numlazors, points, blocks)
+    saveImage(winningBoard, points, lazors, filename)
