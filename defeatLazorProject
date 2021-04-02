@@ -441,9 +441,25 @@ def saveImage(board, points, lazors, filename, scale=1000):
     finalImage.save(fileName)
     print('Your progress has been saved.')
 
-if __name__ == '__main__':
-    filename = 'mad_7.bff'
+def defeatLazorBoard(filename):
+    """
+    Command shell that finds and saves lazor board solution.
+
+    Parameters
+    ----------
+    filename : str
+        name of board file to be solved. should be a *.bff file.
+
+    Returns
+    -------
+    None.
+
+    """
     [grid, lazors, points, blocks, numlazors] = playLazor(filename)
     board = createGrid(grid, points)
     winningBoard = solver(board, grid, lazors, numlazors, points, blocks)
     saveImage(winningBoard, points, lazors, filename)
+
+if __name__ == '__main__':
+    filename = 'mad_7.bff'
+    defeatLazorBoard(filename)
