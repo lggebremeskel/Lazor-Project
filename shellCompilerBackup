@@ -390,7 +390,16 @@ def solver(board, grid, lazors, numlazors, points, blocks):
 
 def saveImage(board, points, lazors, filename, scale=1000):
     """
-    Create basic image of the board and save.
+    Create basic image of the board and saved with name
+    The blocks in the image are as follows:
+        Reflective: white (255,255,255)
+        Opaque: grey (153, 153, 153)
+        Refract: yellow-ish (255, 255, 153)
+        Invalid-location Blocks: brown (205, 102, 29)
+    Other elements:
+        lazor start: maroon (139,35,35)
+        lazor target: blue (0,0,255)
+        lazor path: red (255,0,0)
 
     Parameters
     ----------
@@ -426,7 +435,7 @@ def saveImage(board, points, lazors, filename, scale=1000):
     for i in lazors:
         pixel[i[0], i[1]] = (139, 35, 35)
     for i in points:
-        pixel[i[0], i[1]] = (0, 139, 0)
+        pixel[i[0], i[1]] = (0, 0, 255)
     finalImage = image_map.resize(
         (image_map.size[0]*scale, image_map.size[1]*scale), resample=Image.NEAREST)
     finalImage.save(fileName)
