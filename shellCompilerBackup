@@ -355,6 +355,7 @@ def solver(board, grid, lazors, numlazors, points, blocks):
         Winning solution to the input board, with placed blocks and lazors.
 
     """
+    import itertools as iter
     validMoves = validMove(board)
     totalMovableBlocks = blocks[0]+blocks[1] + blocks[2]
     coordCombo = list(iter.combinations(validMoves, totalMovableBlocks))
