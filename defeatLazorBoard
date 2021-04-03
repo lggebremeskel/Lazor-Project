@@ -60,6 +60,8 @@ def playLazor(filename):
 
     """
     import re
+    import os
+    import sys
     points = []
     parsing = False
     numlazors = 0
@@ -69,6 +71,11 @@ def playLazor(filename):
     refract = [0]
     opaque = [0]
     lazors = []
+    if '.bff' not in filename:
+        filename = '' + filename + '.bff'
+    if not os.path.isfile(filename):
+        sys.exit('There is no *.bff file named: ' +
+                 filename + ' exists. Please try again')
     file = open(filename, 'r')
     for lines in file:
         if lines.startswith('GRID START'):
@@ -360,6 +367,7 @@ def solver(board, grid, lazors, numlazors, points, blocks):
 
     """
     import itertools as iter
+    import sys
     validMoves = validMove(board)
     totalMovableBlocks = blocks[0]+blocks[1] + blocks[2]
     coordCombo = list(iter.combinations(validMoves, totalMovableBlocks))
@@ -385,6 +393,8 @@ def solver(board, grid, lazors, numlazors, points, blocks):
             winningBoard = outputBoard
             break
         board = createGrid(grid, points)
+    if winningBoard == []:
+        sys.exit('No possible solutions found. Check your board file and try again.')
     return winningBoard
 
 
