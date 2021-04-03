@@ -1,7 +1,10 @@
 # Lazor-Project
 
 ## This is a project used to generate solutions to various levels of the popular iOS and Android App, Lazors. Stuck on a difficult level? Looking to beat the App? You’ve come to the right place.
-#### Authors: Keynon Bell, Lidya Gebremeskel, Linda Procell
+#### Authors: 
+* Keynon Bell, email: kbell36@jhu.edu
+* Lidya Gebremeskel, email: lgebrem4@jhu.edu
+* Linda Procell, email: lprocel1@jhu.edu
 ### This code will read in a *.bff file to obtain information such as the original board configuration, lazer paths, target point positions, and movable blocks. 
 
 ## INSTALLATION
